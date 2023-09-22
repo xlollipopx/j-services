@@ -1,4 +1,5 @@
 rootProject.name = 'j-services'
 include 'eureka-server'
-include 'auth-service'
 include 'api-gateway'
+include 'auth-service'
+include 'exchange-service'

@@ -1,5 +1,6 @@
 package com.authservice.service;
 
+import com.authservice.dto.PersonInfo;
 import com.authservice.enumeration.RoleEnum;
 import com.authservice.model.Person;
 
@@ -13,6 +14,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 
+@Slf4j
 @Component
 public class JwtService {
 
@@ -46,13 +49,23 @@ public class JwtService {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plusMinutes(JWT_LIFETIME).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
+        log.info("User roles: {}", user.getRoles());
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(accessExpiration)
                 .signWith(jwtAccessSecret)
+                .claim("personId", user.getId())
                 .claim("roles", user.getRoles().stream().map(Role::getValue).collect(Collectors.toList()))
                 .compact();
+    }
+
+    public PersonInfo getPersonInfoFromToken(String token) {
+        Long personId = ((Number) getClaims(token, jwtAccessSecret).get("personId")).longValue();
+        String username = getUsername(token);
+        List<String> authorities = (List<String>) getClaims(token, jwtAccessSecret).get("roles");
+        log.info("AUTHORIITES: {}", authorities);
+        return new PersonInfo(personId, username, authorities);
     }
 
     public String generateRefreshToken(@NonNull Person user) {
@@ -82,8 +95,6 @@ public class JwtService {
         return ((List<String>)getClaims(token, jwtAccessSecret).get("roles"))
                 .stream().map(RoleEnum::valueOf).collect(Collectors.toList());
     }
-
-
 
     private boolean validateToken(@NonNull String token, @NonNull Key secret) {
         try {

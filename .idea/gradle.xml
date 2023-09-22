@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/api-gateway" />
             <option value="$PROJECT_DIR$/auth-service" />
             <option value="$PROJECT_DIR$/eureka-server" />
+            <option value="$PROJECT_DIR$/exchange-service" />
           </set>
         </option>
       </GradleProjectSettings>
@@ -28,6 +29,14 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/auth-service" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/exchange-service" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/exchange-service" />
           </set>
         </option>
       </GradleProjectSettings>
