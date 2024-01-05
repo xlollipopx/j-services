@@ -30,3 +30,8 @@ eureka:
     service-url:
       defaultZone: http://localhost:8081/eureka
 
+jwt:
+  secret:
+    access: qBTmv4oXFFR2GwjexDJ4t6fsKUIUhhXqlktXjXdkcyygs8nPVEwMfo29VDRRepYDVV5IkIxBMzr7OEHXEHd37w==
+    refresh: zL1HB3Pch05Avfynovxrf/kpF4O2m4NCWKJUjEp27s9J2jEG3ifiKCGylaZ8fDeoONSTJP/wAzKawB8F9rOMNg==
+

@@ -1,9 +1,8 @@
-package com.authservice.service;
+package com.apigateway.utils;
 
-import com.authservice.dto.PersonInfo;
-import com.authservice.enumeration.RoleEnum;
-import com.authservice.model.Person;
-import com.authservice.model.Role;
+
+import com.apigateway.oauth.model.Person;
+import com.apigateway.oauth.model.PersonInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -28,7 +27,7 @@ public class JwtService {
 
     private final SecretKey jwtAccessSecret;
     private final SecretKey jwtRefreshSecret;
-    private static final Long JWT_LIFETIME = 100L;
+    private static final Long JWT_LIFETIME = 10L;
 
     public JwtService(
             @Value("${jwt.secret.access}") String jwtAccessSecret,
@@ -36,21 +35,6 @@ public class JwtService {
     ) {
         this.jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtAccessSecret));
         this.jwtRefreshSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtRefreshSecret));
-    }
-
-    public String generateAccessToken(@NonNull Person user) {
-        final LocalDateTime now = LocalDateTime.now();
-        final Instant accessExpirationInstant = now.plusMinutes(JWT_LIFETIME).atZone(ZoneId.systemDefault()).toInstant();
-        final Date accessExpiration = Date.from(accessExpirationInstant);
-        log.info("User roles: {}", user.getRoles());
-        return Jwts.builder()
-                .setSubject(user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(accessExpiration)
-                .signWith(jwtAccessSecret)
-                .claim("personId", user.getId())
-                .claim("roles", user.getRoles().stream().map(Role::getValue).collect(Collectors.toList()))
-                .compact();
     }
 
     public PersonInfo getPersonInfoFromToken(String token) {
@@ -82,11 +66,6 @@ public class JwtService {
 
     public String getUsername(String token) {
         return getClaims(token, jwtAccessSecret).getSubject();
-    }
-
-    public List<RoleEnum> getRoles(String token) {
-        return ((List<String>)getClaims(token, jwtAccessSecret).get("roles"))
-                .stream().map(RoleEnum::valueOf).collect(Collectors.toList());
     }
 
     private boolean validateToken(@NonNull String token, @NonNull Key secret) {

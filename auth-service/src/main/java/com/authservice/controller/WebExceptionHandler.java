@@ -1,6 +1,7 @@
 package com.authservice.controller;
 
 
+import com.authservice.controller.exception.UserAlreadyExistsException;
 import com.authservice.dto.ErrorDTO;
 import com.authservice.dto.ResponseDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,13 @@ public class WebExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseDTO<ErrorDTO>> badCredentialsError(Exception e) {
         log.error(e.getMessage());
-        return buildErrorResponse("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        return buildErrorResponse("Invalid credentials", HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ResponseDTO<ErrorDTO>> UserAlreadyExistsError(Exception e) {
+        log.error(e.getMessage());
+        return buildErrorResponse("User already exists.", HttpStatus.BAD_REQUEST);
+    }
+
 }

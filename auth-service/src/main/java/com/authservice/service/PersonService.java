@@ -6,6 +6,7 @@ import com.authservice.repository.PersonRepository;
 import com.authservice.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -27,13 +28,6 @@ import java.util.stream.Collectors;
 public class PersonService implements UserDetailsService {
     private final PersonRepository personRepository;
     private final RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
-
 
     public Optional<Person> getPersonByUserName(String username) {
         return personRepository.findByUsername(username);
@@ -42,7 +36,7 @@ public class PersonService implements UserDetailsService {
     public void savePerson(String username, String password) {
         Person person = new Person();
         person.setUsername(username);
-        person.setPasswordHash(passwordEncoder.encode(password));
+        person.setPasswordHash(DigestUtils.sha256Hex(password));
         person.setRoles(List.of(roleRepository.findByValue(RoleEnum.USER.getAuthority()).get()));
         personRepository.save(person);
     }

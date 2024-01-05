@@ -1,4 +1,4 @@
-package com.apigateway.security;
+package com.apigateway.oauth.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +10,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PersonInfo {
-
     private Long personId;
     private String username;
     private List<String> authorities;
+
 }

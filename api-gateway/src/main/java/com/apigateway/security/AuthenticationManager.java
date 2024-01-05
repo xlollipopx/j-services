@@ -1,42 +1,38 @@
 package com.apigateway.security;
 
-import com.apigateway.dto.ResponseDTO;
-import com.apigateway.exception.InvalidTokenException;
+import com.apigateway.oauth.model.PersonInfo;
+import com.apigateway.utils.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient.Builder;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import javax.security.sasl.AuthenticationException;
 import java.util.stream.Collectors;
 
-@Lazy
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
-    private final Builder webClient;
+    private final JwtService jwtService;
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
+        if(authentication.getCredentials() == null) {
+            return Mono.error(AuthenticationException::new);
+        }
         String jwtToken = authentication.getCredentials().toString();
-        return tokenValidate(jwtToken)
-                .bodyToMono(new ParameterizedTypeReference<ResponseDTO<PersonInfo>>(){})
-                .map(x -> this.getAuthorities(x.getData()));
+        return Mono.just(jwtService.getPersonInfoFromToken(jwtToken))
+                .map(this::getAuthorities);
     }
 
     private UsernamePasswordAuthenticationToken getAuthorities(PersonInfo personInfo) {
-        log.info("RESPONSE: {}", personInfo);
+        log.info("response: {}", personInfo);
         return new UsernamePasswordAuthenticationToken(
                 personInfo.getUsername(), personInfo.getPersonId(),
                 personInfo.getAuthorities().stream()
@@ -44,11 +40,4 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                         .collect(Collectors.toList()));
     }
 
-    private WebClient.ResponseSpec tokenValidate(String token) {
-        return webClient.build()
-                .get()
-                .uri("http://localhost:8083/auth-service/validate/token?token=" + token)//uriBuilder -> uriBuilder.host("auth-service").path("/validate-token").queryParam("token", token).build())
-                .retrieve()
-                .onStatus(HttpStatus.FORBIDDEN::equals, response -> Mono.error(new InvalidTokenException("Token is not valid")));
-    }
 }
