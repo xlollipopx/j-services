@@ -1,0 +1,10 @@
+version: "2.2"
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "habrdb"
+      POSTGRES_USER: "habrpguser"
+      POSTGRES_PASSWORD: "pgpwd4habr"
+    ports:
+      - "5430:5432"
